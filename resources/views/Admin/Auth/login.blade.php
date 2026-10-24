@@ -37,7 +37,7 @@
                             class="authentication-login min-vh-100 bg-body row justify-content-center align-items-center p-4">
                             <div class="col-sm-8 col-md-6 col-xl-9">
                                 <div class="text-center">
-                                    <img src="/backend/logo/dashbord-logo.png" width="180" alt="" />
+                                    <img src="/frontend/logo/logo.png" width="180" alt="" />
                                     <br /><br />
                                     <h2 class="mb-3 fs-7 fw-bolder">Welcome to My Dashbord</h2>
                                     <p class=" mb-9">Your Admin Dashboard</p>
