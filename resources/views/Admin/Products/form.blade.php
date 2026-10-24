@@ -1,139 +1,264 @@
 @extends('layouts.admin')
 @section('title')
-    Product Management
+    {{ isset($product) ? 'Edit Part' : 'Add New Part' }} | Auto Vehicle Parts
 @endsection
 @section('content')
-    <form method="POST"
-        action="{{ Route::is('admin.products.create') ? route('admin.products.store') : route('admin.products.update', ['product' => $product->id]) }}"
-        enctype="multipart/form-data" autocomplete="off" id="products-form">
-        @csrf
-        {{ Route::is('admin.products.create') ? '' : method_field('PUT') }}
-        <div class="row">
-            <div class="col-lg-12 d-flex align-items-stretch">
-                <div class="card w-100">
-                    <div class="card-header">
-                        <h5> {{ Route::is('admin.products.create') ? 'Create' : 'Edit' }} Products  </h5>
-                    </div>
-                    <div class="card-body border-top">
-                        <div class="row">
-                            <div class="col-sm-12 col-md-6">
-                                <label class="control-label col-form-label">Category <sup
-                                        class="tcul-star-restrict">*</sup></label>
-                                <select class="form-control" name="category_id">
-                                    <option value="">Select Product Category</option>
-                                    @foreach ($categories as $category)
-                                        @if (isset($product) && $product->category_id == $category->id)
-                                            <option value="{{ $category->id }}" selected>{{ $category->name }}</option>
-                                        @else
-                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                        @endif
-                                    @endforeach
-                                </select>
-                                <div id="category_id-error" style="color:red"></div>
-                            </div>
-                            <div class="col-sm-12 col-md-6">
-                                <label class="control-label col-form-label">Index <sup
-                                        class="tcul-star-restrict">*</sup></label>
-                                <input type="text" class="form-control" placeholder="Write Index here..." name="index"
-                                    value="{{ isset($product) ? $product->index : '' }}" />
-                                <div id="index-error" style="color:red"></div>
-                            </div>
+<!-- Summernote Lite Rich Text Editor CSS -->
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+
+<form method="POST"
+    action="{{ isset($product) ? route('admin.products.update', ['product' => $product->id]) : route('admin.products.store') }}"
+    enctype="multipart/form-data" autocomplete="off" id="products-form">
+    @csrf
+    @if(isset($product))
+        @method('PUT')
+    @endif
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card w-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="ti ti-tool me-1"></i> {{ isset($product) ? 'Edit Auto Part Details' : 'Create New Auto Part' }}
+                    </h5>
+                    <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="ti ti-arrow-left me-1"></i> Back to Products
+                    </a>
+                </div>
+
+                <div class="card-body">
+                    <!-- General Details -->
+                    <h6 class="fw-bold text-primary mb-3"><i class="ti ti-info-circle me-1"></i> Basic Identification & Category</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" name="category_id" required>
+                                <option value="">-- Select Auto Part Category --</option>
+                                @foreach ($categories as $category)
+                                    <option value="{{ $category->id }}" {{ (isset($product) && $product->category_id == $category->id) ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div id="category_id-error" class="text-danger small mt-1"></div>
                         </div>
-                        <div class="row mt-4">
-                            <div class="col-sm-12 col-md-6">
-                                <label class="control-label col-form-label">Name <sup
-                                        class="tcul-star-restrict">*</sup></label>
-                                <input type="text" class="form-control" placeholder="Write Product Name here..."
-                                    name="name" value="{{ isset($product) ? $product->name : '' }}" />
-                                <div id="name-error" style="color:red"></div>
-                            </div>
-                            <div class="col-sm-12 col-md-6">
-                                <label class="control-label col-form-label">Slug <sup
-                                        class="tcul-star-restrict">*</sup></label>
-                                <input type="text" class="form-control" placeholder="Write Slug here..." name="slug"
-                                    value="{{ isset($product) ? $product->slug : '' }}" />
-                                <div id="slug-error" style="color:red"></div>
-                            </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Product Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="product_name" name="name" 
+                                placeholder="e.g. Tested OEM Complete V6 / V8 Engine Assembly"
+                                value="{{ isset($product) ? $product->name : '' }}" required />
+                            <div id="name-error" class="text-danger small mt-1"></div>
                         </div>
-                        <div class="row mt-4">
-                            <div class="col-md-12">
-                                <fieldset class="form-group">
-                                    <label for="basicInput" class="control-label col-form-label">Description
-                                        <sup class="tcul-star-restrict">*</sup></label>
-                                    <textarea type="text" name="description" class="form-control" rows="3" id="service-full_description"
-                                        placeholder="Enter product Description ...">{{ isset($product) ? $product->description : '' }}</textarea>
-                                    <div id="description-error" style="color:red"></div>
-                                </fieldset>
-                            </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">URL Slug <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="product_slug" name="slug" 
+                                placeholder="e.g. tested-oem-engine-assembly"
+                                value="{{ isset($product) ? $product->slug : '' }}" required />
+                            <small class="text-muted">Unique part web address (e.g. /shop/your-part-slug)</small>
+                            <div id="slug-error" class="text-danger small mt-1"></div>
                         </div>
-                        <div class="row mt-4">
-                            <label for="basicInput" class="control-label col-form-label">Upload Photos</label>
-                            <div class="col-md-6">
-                                <fieldset class="form-group">
-                                    <label for="basicInput">Main Photo <sup class="tcul-star-restrict">*</sup></label>
-                                    <input type="file" name="photo" class="form-control-file" id="product-photo"
-                                        placeholder="Please Select Main Photo"></input>
-                                    <div id="photo-error" style="color:red"></div>
-                                </fieldset>
-                                @if (isset($product))
-                                    <img src="{{ asset(Storage::url($product->photo)) }}" border="10" width="100"
-                                        height="100" class="img-rounded img-thumbnail">
-                                @endif
-                            </div>
-                            <div class="col-md-6">
-                                <fieldset class="form-group">
-                                    <label for="basicInput">Multiple Images </label>
-                                    <input type="file" name="other_photo[]" class="form-control-file"
-                                        id="product-other_photo" placeholder="Please Select Images" multiple />
-                                    <div id="other_photo-error" style="color:red"></div>
-                                    <input type="hidden" id="delete_images_source" name="delete_images_source"
-                                        value="">
-                                </fieldset>
-                                @if (isset($product) && isset($product->other_photo))
-                                    @if (isset($product->other_photo))
-                                        @php $count = 1; @endphp
-                                        @foreach ($product->other_photo as $other_image)
-                                            <div>
-                                                <img src="{{ asset(Storage::url($other_image)) }}" border="10"
-                                                    width="100" height="100"
-                                                    class="img-rounded img-thumbnail btn-delete"
-                                                    id="other_photo{{ $count }}">
-                                                <span class="remove-image" style="display:inline;"
-                                                    id="otherimageSpan{{ $count }}"
-                                                    data-source="{{ $other_image }}"
-                                                    onclick="deleteOtherImage({{ $count }})">&#215;</span>
-                                            </div>
-                                            @php $count++; @endphp
-                                        @endforeach
-                                    @endif
-                                @endif
-                            </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">OEM / Part Number</label>
+                            <input type="text" class="form-control" name="part_number" 
+                                placeholder="e.g. ENG-OEM-54200-V6"
+                                value="{{ isset($product) ? $product->part_number : '' }}" />
+                            <div id="part_number-error" class="text-danger small mt-1"></div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Sort Order / Index</label>
+                            <input type="number" class="form-control" name="index" 
+                                placeholder="e.g. 1"
+                                value="{{ isset($product) ? $product->index : '1' }}" />
+                            <div id="index-error" class="text-danger small mt-1"></div>
                         </div>
                     </div>
 
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-primary">
-                            Save
-                            &nbsp;
-                            <i class="ti ti-device-floppy"></i>
-                        </button>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="{{ route('admin.products.index') }}" type="button" class="btn btn-secondary">
-                            Cancel
-                            &nbsp;
-                            <i class="ti ti-arrow-back-up-double"></i>
-                        </a>
+                    <hr class="my-4">
+
+                    <!-- Pricing & Stock (USD) -->
+                    <h6 class="fw-bold text-success mb-3"><i class="ti ti-currency-dollar me-1"></i> USA Pricing & Inventory ($ USD)</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Sale Price ($ USD) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" name="price" 
+                                    placeholder="1150.00"
+                                    value="{{ isset($product) ? $product->price : '' }}" required />
+                            </div>
+                            <small class="text-muted">Current selling price charged to customer in USD</small>
+                            <div id="price-error" class="text-danger small mt-1"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Compare / Regular Price ($ USD)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" name="compare_price" 
+                                    placeholder="1650.00"
+                                    value="{{ isset($product) ? $product->compare_price : '' }}" />
+                            </div>
+                            <small class="text-muted">Original / MSRP price crossed out on shop page</small>
+                            <div id="compare_price-error" class="text-danger small mt-1"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Stock Status</label>
+                            <select class="form-select" name="stock_status">
+                                <option value="IN_STOCK" {{ (isset($product) && $product->stock_status == 'IN_STOCK') ? 'selected' : '' }}>In Stock & Ready to Freight</option>
+                                <option value="LOW_STOCK" {{ (isset($product) && $product->stock_status == 'LOW_STOCK') ? 'selected' : '' }}>Low Stock (1-2 Left)</option>
+                                <option value="OUT_OF_STOCK" {{ (isset($product) && $product->stock_status == 'OUT_OF_STOCK') ? 'selected' : '' }}>Out of Stock</option>
+                            </select>
+                        </div>
                     </div>
+
+                    <hr class="my-4">
+
+                    <!-- Auto Vehicle Specifications -->
+                    <h6 class="fw-bold text-secondary mb-3"><i class="ti ti-car me-1"></i> Auto Part Verification & Warranty Specs</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Mileage / Donor Condition</label>
+                            <input type="text" class="form-control" name="mileage" 
+                                placeholder="e.g. 54,200 Original Miles"
+                                value="{{ isset($product) ? $product->mileage : 'Verified Low Miles' }}" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Warranty Terms</label>
+                            <input type="text" class="form-control" name="warranty" 
+                                placeholder="e.g. 1-Year Comprehensive Replacement Guarantee"
+                                value="{{ isset($product) ? $product->warranty : '1-Year Comprehensive Replacement Guarantee' }}" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">VIN Fitment Notes</label>
+                            <input type="text" class="form-control" name="fitment" 
+                                placeholder="e.g. 100% Guaranteed Exact Fit by VIN Verification"
+                                value="{{ isset($product) ? $product->fitment : '100% Guaranteed Exact Fit by VIN Verification' }}" />
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Descriptions -->
+                    <h6 class="fw-bold text-dark mb-3"><i class="ti ti-file-text me-1"></i> Part Descriptions (Rich Text Box Format)</h6>
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Short Summary / Overview</label>
+                            <textarea name="short_description" class="form-control" rows="2" 
+                                placeholder="Brief 1-2 sentence overview shown in product card and summary...">{{ isset($product) ? $product->short_description : '' }}</textarea>
+                            <div id="short_description-error" class="text-danger small mt-1"></div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Full Technical Description & Quality Testing Report <span class="text-danger">*</span></label>
+                            <textarea id="product_description" name="description" class="form-control" rows="8" required>{{ isset($product) ? $product->description : '' }}</textarea>
+                            <div id="description-error" class="text-danger small mt-1"></div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Images -->
+                    <h6 class="fw-bold text-dark mb-3"><i class="ti ti-photo me-1"></i> Product Photos</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Primary Feature Image</label>
+                            <input type="file" name="photo" class="form-control" accept="image/*" />
+                            <small class="text-muted">Recommended: Square or 800x800 clear image</small>
+                            <div id="photo-error" class="text-danger small mt-1"></div>
+
+                            @if (isset($product) && $product->photo)
+                                <div class="mt-2">
+                                    <img src="{{ $product->photo_url }}" width="120" height="120" class="rounded border shadow-sm" style="object-fit:cover;">
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Additional Gallery Images</label>
+                            <input type="file" name="other_photo[]" class="form-control" accept="image/*" multiple />
+                            <small class="text-muted">Hold Ctrl/Cmd to select multiple angle shots</small>
+                            <input type="hidden" id="delete_images_source" name="delete_images_source" value="">
+
+                            @if (isset($product) && is_array($product->other_photo))
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    @foreach ($product->other_photo as $idx => $img)
+                                        <div class="position-relative" id="gallery_wrap_{{ $idx }}">
+                                            <img src="{{ Str::startsWith($img, '/') ? $img : '/storage/' . $img }}" 
+                                                width="80" height="80" class="rounded border shadow-sm" style="object-fit:cover;">
+                                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 p-0 px-1 rounded-circle" 
+                                                onclick="removeGalleryImg('{{ $img }}', 'gallery_wrap_{{ $idx }}')">&times;</button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light d-flex justify-content-end gap-2">
+                    <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4" id="btn-submit">
+                        <i class="ti ti-device-floppy me-1"></i> Save Product
+                    </button>
                 </div>
             </div>
         </div>
-    </form>
-    <script>
+    </div>
+</form>
+
+<!-- Summernote Lite JS -->
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize Summernote Rich Text Editor
+        $('#product_description').summernote({
+            placeholder: 'Write comprehensive technical specifications, compression test results, parts included, and vehicle fitment details here...',
+            tabsize: 2,
+            height: 250,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ]
+        });
+
+        // Auto Slug Generation from Name
+        $('#product_name').on('input', function() {
+            var slug = $(this).val()
+                .toLowerCase()
+                .replace(/[^\w ]+/g, '')
+                .replace(/ +/g, '-');
+            @if(!isset($product))
+                $('#product_slug').val(slug);
+            @endif
+        });
+
+        // Handle AJAX Form Submission
         $('#products-form').submit(function(e) {
             e.preventDefault();
             $('div[id$="-error"]').empty();
+            
+            // Sync Summernote content to textarea
+            $('#product_description').val($('#product_description').summernote('code'));
+
+            var submitBtn = $('#btn-submit');
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Saving...');
+
             var form = $(this);
             var url = form.attr('action');
+
             $.ajax({
                 type: "POST",
                 url: url,
@@ -141,53 +266,37 @@
                 contentType: false,
                 cache: false,
                 processData: false,
-                success: function(data) {
-                    if (data.status == 'success') {
-                        toastr.success(data.message, '', {
-                            showMethod: "slideDown",
-                            hideMethod: "slideUp",
-                            timeOut: 1500,
-                            closeButton: true,
-                        });
-                        setTimeout(function() {
-                            window.location.href = "{!! route('admin.products.index') !!}";
-                        }, 100);
-                    } else {
-                        toastr.error('There is some error!!', '', {
-                            showMethod: "slideDown",
-                            hideMethod: "slideUp",
-                            timeOut: 1500,
-                            closeButton: true,
-                        });
-                    }
+                success: function(response) {
+                    toastr.success(response.message || 'Product saved successfully!');
+                    setTimeout(function() {
+                        window.location.href = "{!! route('admin.products.index') !!}";
+                    }, 1000);
                 },
-                error: function(xhr, ajaxOptions, thrownError) {
-                    toastr.error('There are some errors in Form. Please check your inputs', '', {
-                        showMethod: "slideDown",
-                        hideMethod: "slideUp",
-                        timeOut: 1500,
-                        closeButton: true,
-                    });
-                    $.each(xhr.responseJSON.errors, function(key, value) {
-                        $('#' + key + '-error').html(value);
-                    });
-                    $('html, body').animate({
-                        scrollTop: $('#' + Object.keys(xhr.responseJSON.errors)[0] + '-error')
-                            .offset().top - 200
-                    }, 500);
+                error: function(xhr) {
+                    submitBtn.prop('disabled', false).html('<i class="ti ti-device-floppy me-1"></i> Save Product');
+                    toastr.error('Please fix the errors in the form.');
+
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        $.each(xhr.responseJSON.errors, function(key, value) {
+                            $('#' + key + '-error').html(value[0]);
+                        });
+                        var firstError = Object.keys(xhr.responseJSON.errors)[0];
+                        if ($('#' + firstError + '-error').length) {
+                            $('html, body').animate({
+                                scrollTop: $('#' + firstError + '-error').offset().top - 150
+                            }, 400);
+                        }
+                    }
                 }
             });
         });
+    });
 
-
-        var otherImage = [];
-
-        function deleteOtherImage(count) {
-            $('#otherimageSpan' + count).removeAttr("style");
-            $('#other_photo' + count).hide();
-            var image = $('#otherimageSpan' + count).data('source');
-            otherImage.push(image);
-            $("input[name=delete_images_source]").val(otherImage.join(","));
-        }
-    </script>
+    var deletedImages = [];
+    function removeGalleryImg(imgPath, elemId) {
+        deletedImages.push(imgPath);
+        $('#delete_images_source').val(deletedImages.join(','));
+        $('#' + elemId).remove();
+    }
+</script>
 @endsection

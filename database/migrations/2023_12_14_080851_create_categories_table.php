@@ -15,11 +15,12 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('status')->default('INACTIVE');
+            $table->string('status')->default('ACTIVE');
             $table->string('name');
-            $table->string('slug');
+            $table->string('slug')->unique();
             $table->string('index')->nullable();
-            $table->string('home_featured')->default('INACTIVE');
+            $table->string('image')->nullable();
+            $table->string('home_featured')->default('ACTIVE');
             $table->longText('description')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();

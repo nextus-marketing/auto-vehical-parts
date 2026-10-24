@@ -23,14 +23,24 @@ class BaseModel extends Model {
         static::creating(function($model)
         {
             $user = \Auth::user();
-            $model->created_by = $user->id;
-            $model->updated_by = $user->id;
+            if ($user) {
+                if (\Schema::hasColumn($model->getTable(), 'created_by')) {
+                    $model->created_by = $user->id;
+                }
+                if (\Schema::hasColumn($model->getTable(), 'updated_by')) {
+                    $model->updated_by = $user->id;
+                }
+            }
         });
 
         static::updating(function($model)
         {
             $user = \Auth::user();
-            $model->updated_by = $user->id;
+            if ($user) {
+                if (\Schema::hasColumn($model->getTable(), 'updated_by')) {
+                    $model->updated_by = $user->id;
+                }
+            }
         });
     }
 

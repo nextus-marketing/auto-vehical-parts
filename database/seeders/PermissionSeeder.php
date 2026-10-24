@@ -270,6 +270,26 @@ class PermissionSeeder extends Seeder
                 ],
             ]
         ],
+        'Coupon' => [
+            'controller' => 'Admin\CouponController',
+            'permissions' => [
+                'coupon-view' => [
+                    'index',
+                    'data',
+                    'list',
+                    'show',
+                ],
+                'coupon-store' => [
+                    'create',
+                    'store',
+                ],
+                'coupon-update' => [
+                    'edit',
+                    'update',
+                    'changeStatus',
+                ],
+            ]
+        ],
 
         'Activity' => [
             'controller' => 'Admin\ActivityController',
@@ -363,6 +383,11 @@ class PermissionSeeder extends Seeder
             'order-view',
             'order-store',
             'order-update',
+
+            #Coupon
+            'coupon-view',
+            'coupon-store',
+            'coupon-update',
 
             #Activity
             'activity-view',

@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use DataTables;
+use Yajra\DataTables\Facades\DataTables;
 use App\Models\Category;
-use App\Models\Permission;
-use App\Models\Permissiongroup;
-use View;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
@@ -19,48 +17,41 @@ class CategoryController extends Controller
 
     public function data(Request $request)
     {
-        $query = Category::where('id', '!=', 0)->orderByDesc('id');
+        $query = Category::withCount('products')->orderBy('index', 'asc');
 
         return DataTables::eloquent($query)
             ->editColumn('name', function ($category) {
-                return $category->name;
+                return '<strong>' . e($category->name) . '</strong>' .
+                    '<br><small class="text-muted">' . $category->products_count . ' Parts Cataloged</small>';
             })
             ->editColumn('slug', function ($category) {
-                return $category->slug;
+                return '<code>' . e($category->slug) . '</code>';
             })
             ->editColumn('index', function ($category) {
-                return $category->index;
+                return $category->index ?: '-';
             })
             ->editColumn('description', function ($category) {
-                return $category->description;
-            })
-            ->editColumn('home_featured', function ($category) {
-                if ($category->home_featured == 'ACTIVE') {
-                    return '<div class="form-check form-switch"><input class="form-check-input categories-home_featured-switch" type="checkbox" data-column="home_featured"  checked data-routekey="' . $category->route_key . '"/></div>';
-                } else {
-                    return '<div class="form-check form-switch"><input class="form-check-input categories-home_featured-switch" type="checkbox" data-column="home_featured"  data-routekey="' . $category->route_key . '"/></div>';
-                }
+                return Str::limit($category->description, 50);
             })
             ->editColumn('status', function ($category) {
-                if ($category->status == 'ACTIVE') {
-                    return '<div class="form-check form-switch"><input class="form-check-input categories-status-switch" type="checkbox" checked data-routekey="' . $category->route_key . '"/></div>';
-                } else {
-                    return '<div class="form-check form-switch"><input class="form-check-input categories-status-switch" type="checkbox" data-routekey="' . $category->route_key . '"/></div>';
-                }
+                $checked = ($category->status == 'ACTIVE') ? 'checked' : '';
+                return '<div class="form-check form-switch"><input class="form-check-input categories-status-switch" type="checkbox" ' . $checked . ' data-id="' . $category->id . '"/></div>';
             })
             ->addColumn('action', function ($category) {
-                $edit  = '<a href="' . route('admin.categories.edit', ['category' => $category->route_key]) . '" class="badge bg-warning fs-1"><i class="fa fa-edit"></i></a>';
-                return $edit;
+                $edit = '<a href="' . route('admin.categories.edit', ['category' => $category->id]) . '" class="btn btn-sm btn-warning me-1" title="Edit"><i class="ti ti-edit"></i></a>';
+                $shopLink = '<a href="/shop?category=' . $category->slug . '" target="_blank" class="btn btn-sm btn-info me-1" title="View in Shop"><i class="ti ti-external-link"></i></a>';
+                $delete = '<button class="btn btn-sm btn-danger btn-delete-category" data-id="' . $category->id . '" data-name="' . e($category->name) . '" title="Delete"><i class="ti ti-trash"></i></button>';
+                return $edit . ' ' . $shopLink . ' ' . $delete;
             })
             ->addIndexColumn()
-            ->rawColumns(['status', 'action', 'name', 'slug', 'index', 'description', 'home_featured'])
+            ->rawColumns(['name', 'slug', 'status', 'action'])
             ->setRowId('id')
             ->make(true);
     }
 
     public function list()
     {
-        $categories = Category::all();
+        $categories = Category::where('status', 'ACTIVE')->orderBy('name')->get();
         return response()->json([
             'status' => 'success',
             'list' => $categories
@@ -74,11 +65,18 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $this->rules['index'] = 'required|numeric|unique:categories,index,NULL,id';
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:categories,slug',
+            'index' => 'nullable|numeric',
+            'description' => 'nullable|string',
+        ]);
 
-        $request->validate($this->rules, $this->customMessages);
         $category = new Category;
         $category->fill($request->all());
+        $category->slug = Str::slug($request->slug ?: $request->name);
+        $category->status = $request->status ?: 'ACTIVE';
+        $category->home_featured = $request->home_featured ?: 'ACTIVE';
         $category->save();
 
         return response()->json([
@@ -95,66 +93,61 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        $this->rules['slug'] = 'required|alpha_dash|unique:categories,slug,' . $category->id . ',id';
-        $this->rules['index'] = 'required|numeric|unique:categories,index,' . $category->id . ',id';
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:categories,slug,' . $category->id,
+            'index' => 'nullable|numeric',
+            'description' => 'nullable|string',
+        ]);
 
-        $request->validate($this->rules, $this->customMessages);
-        $category->fill($request->all())->save();
+        $category->fill($request->all());
+        $category->slug = Str::slug($request->slug ?: $request->name);
         $category->save();
 
         return response()->json([
             'status' => 'success',
             'message' => 'Category Updated Successfully',
             'category' => $category
-        ], 201);
+        ], 200);
     }
 
     public function destroy(Category $category)
     {
-        // Implement the logic for deleting the category
+        $category->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Category deleted successfully'
+        ]);
     }
 
     public function changeHomeFeaturedStatus(Request $request)
     {
-        $category = Category::findByKey($request->route_key);
-        //dd($request->home_featured);
-        $category->home_featured = $request->status;
-        $category->save();
+        $category = Category::find($request->id ?: $request->route_key);
+        if ($category) {
+            $category->home_featured = $request->status;
+            $category->save();
+        }
 
         return response()->json([
             'status' => 'success',
-            'message' => $category->name . ' has been marked ' . $category->home_featured . ' successfully',
+            'message' => 'Category featured status updated',
             'category' => $category
-        ], 201);
+        ], 200);
     }
 
     public function changeStatus(Request $request)
     {
-        $category = Category::findByKey($request->route_key);
-        $category->status = $request->status;
-        $category->save();
+        $category = Category::find($request->id ?: $request->route_key);
+        if ($category) {
+            $category->status = $request->status;
+            $category->home_featured = $request->status;
+            $category->save();
+        }
 
         return response()->json([
             'status' => 'success',
-            'message' => $category->name . ' has been marked ' . $category->status . ' successfully',
+            'message' => 'Category status updated to ' . $category->status,
             'category' => $category
-        ], 201);
+        ], 200);
     }
-
-    private $rules = [
-        'name' => 'required|regex:/^[\pL\s\-]+$/u',
-        'slug' => 'required|alpha_dash|unique:categories,slug,',
-        'index' => 'nullable|numeric',
-        'description' => 'nullable|string',
-    ];
-
-    private $customMessages = [
-        'name.required' => 'Category name is required',
-        'name.regex' => 'Category name should contain only alphabets',
-        'slug.required' => 'Slug is required',
-        'slug.alpha_dash' => 'Slug should only contain letters, numbers, dashes, and underscores',
-        'slug.unique' => 'This slug is already in use',
-        'index.numeric' => 'Index should be a number',
-        'description' => 'Description should be a string',
-    ];
 }

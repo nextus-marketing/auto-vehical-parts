@@ -21,7 +21,7 @@ use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\RazorpayPaymentController;
+use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\ItemcategoryController;
 
 //End of use statements
@@ -112,6 +112,12 @@ Route::middleware(['auth', 'admin', 'preventBackHistory'])->group(function () {
          Route::resource('orders', OrderController::class);
          Route::post('orders/data', [OrderController::class, 'data'])->name('orders.data');
          Route::post('orders/list',[OrderController::class, 'list'])->name('orders.list');
+         Route::post('orders/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update.status');
+
+         // Coupons
+         Route::resource('coupons', CouponController::class);
+         Route::post('coupons/data', [CouponController::class, 'data'])->name('coupons.data');
+         Route::post('coupons/change-status', [CouponController::class, 'changeStatus'])->name('coupons.change.status');
 
          // Activity Logs
         Route::resource('activities', ActivityController::class); 

@@ -1,132 +1,120 @@
 @extends('layouts.admin')
 @section('title')
-    Category Management
+    {{ isset($category) ? 'Edit Category' : 'Create Category' }} | Auto Vehicle Parts
 @endsection
 @section('content')
     <form method="POST"
-        action="{{ Route::is('admin.categories.create') ? route('admin.categories.store') : route('admin.categories.update', ['category' => $category->id]) }}"
-        enctype="multipart/form-data" autocomplete="off" id="categories-form">
+        action="{{ isset($category) ? route('admin.categories.update', ['category' => $category->id]) : route('admin.categories.store') }}"
+        autocomplete="off" id="categories-form">
         @csrf
-        {{ Route::is('admin.categories.create') ? '' : method_field('PUT') }}
+        @if(isset($category))
+            @method('PUT')
+        @endif
+
         <div class="row">
-            <div class="col-lg-12 d-flex align-items-stretch">
+            <div class="col-lg-12">
                 <div class="card w-100">
-                    <div class="card-header">
-                        <h5> {{ Route::is('admin.categories.create') ? 'Create' : 'Edit' }} Category </h5>
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="ti ti-category me-1"></i> {{ isset($category) ? 'Edit Auto Part Category' : 'Create New Auto Part Category' }}
+                        </h5>
+                        <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="ti ti-arrow-left me-1"></i> Back to Categories
+                        </a>
                     </div>
-                    <div class="card-body border-top">
-                        <div class="row">
-                            <div class="col-sm-12 col-md-6">
-                                <label class="control-label col-form-label">Index <sup class="tcul-star-restrict">*</sup></label>
-                                <input type="text" class="form-control" placeholder="Write Index here..." name="index"
-                                    value="{{ isset($category) ? $category->index : '' }}" />
-                                <div id="index-error" style="color:red"></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Category Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cat_name" placeholder="e.g. Used Engines & Powertrain, Transmissions"
+                                    name="name" value="{{ isset($category) ? $category->name : '' }}" required />
+                                <div id="name-error" class="text-danger small mt-1"></div>
                             </div>
-                        </div>
-                        <div class="row mt-4">
-                            <div class="col-sm-12 col-md-6">
-                                <label class="control-label col-form-label">Name <sup class="tcul-star-restrict">*</sup></label>
-                                <input type="text" class="form-control" placeholder="Write Category Name here..."
-                                    name="name" value="{{ isset($category) ? $category->name : '' }}" />
-                                <div id="name-error" style="color:red"></div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">URL Slug <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cat_slug" placeholder="e.g. used-engines, transmissions" 
+                                    name="slug" value="{{ isset($category) ? $category->slug : '' }}" required />
+                                <small class="text-muted">Used for shop filtering (e.g. /shop?category=used-engines)</small>
+                                <div id="slug-error" class="text-danger small mt-1"></div>
                             </div>
-                            <div class="col-sm-12 col-md-6">
-                                <label class="control-label col-form-label">Slug <sup class="tcul-star-restrict">*</sup></label>
-                                <input type="text" class="form-control" placeholder="Write Slug here..." name="slug"
-                                    value="{{ isset($category) ? $category->slug : '' }}" />
-                                <div id="slug-error" style="color:red"></div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Display Sort Order</label>
+                                <input type="number" class="form-control" placeholder="1" name="index"
+                                    value="{{ isset($category) ? $category->index : '1' }}" />
+                                <div id="index-error" class="text-danger small mt-1"></div>
                             </div>
-                        </div>
-                        <div class="row mt-4">
+
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">Status</label>
+                                <select class="form-select" name="status">
+                                    <option value="ACTIVE" {{ (!isset($category) || $category->status == 'ACTIVE') ? 'selected' : '' }}>Active (Visible Everywhere)</option>
+                                    <option value="INACTIVE" {{ (isset($category) && $category->status == 'INACTIVE') ? 'selected' : '' }}>Inactive (Hidden)</option>
+                                </select>
+                            </div>
+
                             <div class="col-md-12">
-                                <fieldset class="form-group">
-                                    <label for="basicInput" class="control-label col-form-label">Description
-                                        </label>
-                                    <textarea type="text" name="description" class="form-control" rows="3" id="service-full_description"
-                                        placeholder="Enter Description ...">{{ isset($category) ? $category->description : '' }}</textarea>
-                                    <div id="description-error" style="color:red"></div>
-                                </fieldset>
+                                <label class="form-label fw-semibold">Description</label>
+                                <textarea name="description" class="form-control" rows="3"
+                                    placeholder="Brief description of this auto part category...">{{ isset($category) ? $category->description : '' }}</textarea>
+                                <div id="description-error" class="text-danger small mt-1"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-primary">
-                            Save
-                            &nbsp;
-                            <i class="ti ti-device-floppy"></i>
+                    <div class="card-footer bg-light d-flex justify-content-end gap-2">
+                        <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4" id="btn-submit">
+                            <i class="ti ti-device-floppy me-1"></i> Save Category
                         </button>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="{{ route('admin.categories.index') }}" type="button" class="btn btn-secondary">
-                            Cancel
-                            &nbsp;
-                            <i class="ti ti-arrow-back-up-double"></i>
-                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </form>
+
     <script>
-        $('#categories-form').submit(function(e) {
-            e.preventDefault();
-            $('div[id$="-error"]').empty();
-            var form = $(this);
-            var url = form.attr('action');
-            $.ajax({
-                type: "POST",
-                url: url,
-                data: new FormData(this),
-                contentType: false,
-                cache: false,
-                processData: false,
-                success: function(data) {
-                    if (data.status == 'success') {
-                        toastr.success(data.message, '', {
-                            showMethod: "slideDown",
-                            hideMethod: "slideUp",
-                            timeOut: 1500,
-                            closeButton: true,
-                        });
+        $(document).ready(function() {
+            $('#cat_name').on('input', function() {
+                var slug = $(this).val()
+                    .toLowerCase()
+                    .replace(/[^\w ]+/g, '')
+                    .replace(/ +/g, '-');
+                @if(!isset($category))
+                    $('#cat_slug').val(slug);
+                @endif
+            });
+
+            $('#categories-form').submit(function(e) {
+                e.preventDefault();
+                $('div[id$="-error"]').empty();
+                var submitBtn = $('#btn-submit');
+                submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Saving...');
+
+                var form = $(this);
+                var url = form.attr('action');
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: form.serialize(),
+                    success: function(data) {
+                        toastr.success(data.message || 'Category saved successfully!');
                         setTimeout(function() {
                             window.location.href = "{!! route('admin.categories.index') !!}";
-                        }, 100);
-                    } else {
-                        toastr.error('There is some error!!', '', {
-                            showMethod: "slideDown",
-                            hideMethod: "slideUp",
-                            timeOut: 1500,
-                            closeButton: true,
-                        });
+                        }, 1000);
+                    },
+                    error: function(xhr) {
+                        submitBtn.prop('disabled', false).html('<i class="ti ti-device-floppy me-1"></i> Save Category');
+                        toastr.error('Please fix errors in the form.');
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            $.each(xhr.responseJSON.errors, function(key, value) {
+                                $('#' + key + '-error').html(value[0]);
+                            });
+                        }
                     }
-                },
-                error: function(xhr, ajaxOptions, thrownError) {
-                    toastr.error('There are some errors in Form. Please check your inputs', '', {
-                        showMethod: "slideDown",
-                        hideMethod: "slideUp",
-                        timeOut: 1500,
-                        closeButton: true,
-                    });
-                    $.each(xhr.responseJSON.errors, function(key, value) {
-                        $('#' + key + '-error').html(value);
-                    });
-                    $('html, body').animate({
-                        scrollTop: $('#' + Object.keys(xhr.responseJSON.errors)[0] + '-error')
-                            .offset().top - 200
-                    }, 500);
-                }
+                });
             });
         });
-
-
-        var otherImage = [];
-
-        function deleteOtherImage(count) {
-            $('#otherimageSpan' + count).removeAttr("style");
-            $('#other_photo' + count).hide();
-            var image = $('#otherimageSpan' + count).data('source');
-            otherImage.push(image);
-            $("input[name=delete_images_source]").val(otherImage.join(","));
-        }
     </script>
 @endsection
