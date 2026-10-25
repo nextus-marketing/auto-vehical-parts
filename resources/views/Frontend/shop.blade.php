@@ -44,6 +44,41 @@
         .mk *, .mk *::before, .mk *::after { box-sizing: border-box; }
         .mk-wrap { max-width: 1300px; margin: 0 auto; padding: 0 12px; }
 
+        /* ===== Keystone scrolling ticker ===== */
+        .mk-ticker {
+            background: #0c2957;
+            color: #fff;
+            overflow: hidden;
+            white-space: nowrap;
+            border-bottom: 3px solid #e81c2e;
+        }
+        .mk-ticker-track {
+            display: flex;
+            width: max-content;
+            animation: mk-scroll 28s linear infinite;
+        }
+        .mk-ticker:hover .mk-ticker-track { animation-play-state: paused; }
+        .mk-ticker-group { display: flex; flex: none; }
+        .mk-ticker-group span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 36px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: .2px;
+        }
+        .mk-ticker-group i { color: #ffd48a; }
+
+        @keyframes mk-scroll {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .mk-ticker-track { animation: none; }
+        }
+        /* ===================================== */
+
         .mk-bar {
             background: #fff;
             border-bottom: 1px solid var(--mk-line);
@@ -197,10 +232,26 @@
             .mk-select { display: none; }
             .mk-input { border-left: 2px solid #0c2957; border-radius: 8px 0 0 8px; }
             .mk-grid { grid-template-columns: 1fr; gap: 10px; }
+            .mk-ticker-group span { font-size: 13px; padding: 8px 24px; }
         }
     </style>
 
     <section class="mk">
+
+        <!-- Keystone scrolling ticker -->
+        <div class="mk-ticker" aria-label="Parts supplied by Keystone. Tested, inspected and genuine OEM quality, fitment guaranteed.">
+            <div class="mk-ticker-track">
+                @for ($t = 0; $t < 2; $t++)
+                    <div class="mk-ticker-group" @if($t == 1) aria-hidden="true" @endif>
+                        <span><i class="fas fa-shield-alt"></i> Parts supplied by Keystone</span>
+                        <span><i class="fas fa-check-circle"></i> Tested &amp; inspected</span>
+                        <span><i class="fas fa-cog"></i> Genuine OEM quality</span>
+                        <span><i class="fas fa-car"></i> Fitment guaranteed</span>
+                    </div>
+                @endfor
+            </div>
+        </div>
+
         <!-- Top bar: category select + search + category chips -->
         <div class="mk-bar">
             <div class="mk-wrap">

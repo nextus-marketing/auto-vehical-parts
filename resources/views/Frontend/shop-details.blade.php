@@ -91,6 +91,24 @@
     .pd-btn-navy:hover { background: #081c3e; color: #fff; }
     .pd-btn:active { transform: translateY(1px); }
 
+    /* Keystone note */
+    .pd-note {
+        margin-top: 22px;
+        background: #f0f6ff;
+        border: 1px solid #d6e4f7;
+        border-left: 4px solid #0b5cab;
+        border-radius: 8px;
+        padding: 14px 16px;
+    }
+    .pd-note-head {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 16px; font-weight: 700; color: #0c2957; margin-bottom: 8px;
+    }
+    .pd-note-head i { color: #0b5cab; font-size: 18px; }
+    .pd-note-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+    .pd-note-list li { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #0f1111; }
+    .pd-note-list i { color: #28a745; }
+
     /* Help strip */
     .pd-help {
         display: flex; align-items: center; gap: 14px; margin-top: 22px;
@@ -293,6 +311,19 @@
                            onclick="addToCartGlobal({{ $product->id }}, parseInt($('#itemQty').val()))">
                             Buy Now <i class="fas fa-arrow-right"></i>
                         </a>
+                    </div>
+
+                    <!-- Keystone note -->
+                    <div class="pd-note">
+                        <div class="pd-note-head">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Supplied by Keystone</span>
+                        </div>
+                        <ul class="pd-note-list">
+                            <li><i class="fas fa-check-circle"></i> Tested &amp; inspected</li>
+                            <li><i class="fas fa-check-circle"></i> Genuine OEM quality</li>
+                            <li><i class="fas fa-check-circle"></i> Fitment guaranteed</li>
+                        </ul>
                     </div>
 
                     <div class="pd-help">
