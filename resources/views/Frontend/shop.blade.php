@@ -116,18 +116,36 @@
             transition: box-shadow .2s, border-color .2s;
         }
         .mk-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.08); border-color: #bbb; }
+
+        /* ===== Auto-fit product image (any uploaded size/ratio) ===== */
         .mk-thumb {
-            position: relative; display: block;
+            position: relative;
+            display: flex; align-items: center; justify-content: center;
             aspect-ratio: 4 / 3;
-            background: #f6f7f8; border-radius: 6px; overflow: hidden;
+            background: #fff;
+            border: 1px solid #f0f1f3;
+            border-radius: 6px;
+            overflow: hidden;
+            padding: 8px;
         }
-        .mk-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+        .mk-thumb img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;   /* whole image always visible, never cropped */
+            display: block;
+            transition: transform .3s;
+        }
         .mk-card:hover .mk-thumb img { transform: scale(1.04); }
+        /* ============================================================ */
+
         .mk-deal {
             position: absolute; left: 6px; top: 6px;
             background: var(--mk-deal); color: #fff;
             font-size: 11px; font-weight: 700;
             padding: 2px 6px; border-radius: 3px;
+            z-index: 2;
         }
         .mk-cat-tag {
             font-size: 11px; font-weight: 600; text-transform: uppercase; color: #e81c2e; margin-top: 6px;
@@ -147,7 +165,7 @@
         .mk-price b { font-size: 18px; font-weight: 700; color: #0c2957; }
         .mk-price s { font-size: 12px; color: var(--mk-muted); }
         .mk-price span { font-size: 12px; color: var(--mk-green); font-weight: 600; }
-        
+
         .mk-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: auto; }
         .mk-btn {
             height: 36px; display: flex; align-items: center; justify-content: center;
@@ -238,7 +256,10 @@
                              data-rating="{{ $p->rating }}"
                              data-order="{{ $i }}">
                         <a href="/shop/{{ $p->slug }}" class="mk-thumb">
-                            <img src="{{ $p->photo_url }}" alt="{{ $p->name }}" loading="lazy">
+                            <img src="{{ $p->photo_url }}"
+                                 alt="{{ $p->name }}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null;this.src='/frontend/img/no-image.png';">
                             @if ($off > 0)<span class="mk-deal">{{ $off }}% OFF</span>@endif
                         </a>
                         <div class="mk-info">
@@ -337,10 +358,10 @@
         }
     }
 
-    chips.forEach(function (c) { 
-        c.addEventListener('click', function () { 
-            setCat(c.dataset.cat); 
-        }); 
+    chips.forEach(function (c) {
+        c.addEventListener('click', function () {
+            setCat(c.dataset.cat);
+        });
     });
 
     select.addEventListener('change', function () { setCat(select.value); });
@@ -348,7 +369,7 @@
     search.addEventListener('keydown', function (e) { if (e.key === 'Enter') apply(); });
     document.getElementById('mkGo').addEventListener('click', apply);
     sort.addEventListener('change', apply);
-    
+
     var resetBtn = document.getElementById('mkReset');
     if (resetBtn) {
         resetBtn.addEventListener('click', function () {
