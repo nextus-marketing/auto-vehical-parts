@@ -141,18 +141,22 @@
                                                     alt="" />
                                                 <div class="ms-3">
                                                     <h5 class="mb-1 fs-3">
-                                                        {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
+                                                        {{ Auth::user()?->first_name ?? 'Admin' }} {{ Auth::user()?->last_name ?? '' }}
                                                     </h5>
                                                     <span class="mb-1 d-block text-dark">
-                                                        @foreach (Auth::user()->getRoleNames() as $role)
-                                                            {{ $role }}
-                                                        @endforeach
+                                                        @if (Auth::user())
+                                                            @foreach (Auth::user()->getRoleNames() as $role)
+                                                                {{ $role }}
+                                                            @endforeach
+                                                        @else
+                                                            Administrator
+                                                        @endif
                                                     </span>
                                                     <p class="mb-0 d-flex text-dark align-items-center gap-2">
-                                                        <i class="ti ti-mail fs-4"></i> {{ Auth::user()->email }}
+                                                        <i class="ti ti-mail fs-4"></i> {{ Auth::user()?->email ?? 'admin@autovehicleparts.com' }}
                                                     </p>
                                                     <p class="mb-0 d-flex text-dark align-items-center gap-2">
-                                                        <i class="ti ti-phone fs-4"></i> {{ Auth::user()->mobile }}
+                                                        <i class="ti ti-phone fs-4"></i> {{ Auth::user()?->mobile ?? '+1-888-370-9806' }}
                                                     </p>
                                                 </div>
                                             </div>

@@ -33,7 +33,10 @@
     .co-pay strong { display:block; font-size:15px; color:var(--ink); }
     .co-pay small { color:var(--muted); font-size:12.5px; }
     .co-pay i.ico { font-size:20px; width:26px; text-align:center; color:var(--ink); }
-    .co-sim { border:1px dashed #d4a017; background:#fffbeb; border-radius:8px; padding:14px 16px; margin-top:18px; font-size:13px; }
+    .co-card-box { background:#fcfdfe; border:1.5px solid #e2e8f0; border-radius:10px; padding:18px 20px; margin-top:12px; margin-bottom:16px; }
+    .co-card-logos { display:flex; gap:8px; align-items:center; }
+    .co-card-logos i { font-size:24px; }
+    .anet-shield { display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:#0f5132; background:#e8f5e9; padding:6px 12px; border-radius:6px; border:1px solid #c8e6c9; }
     .co-side { position:sticky; top:100px; }
     .co-side-head { padding:18px 22px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:baseline; }
     .co-side-head h5 { margin:0; font-size:17px; font-weight:700; color:var(--ink); }
@@ -80,7 +83,7 @@
 
     <section class="co-page">
         <div class="container">
-            @if ($errors->any())
+            @if (isset($errors) && $errors->any())
                 <div class="alert alert-danger mb-4" role="alert">
                     <strong>Please fix the following:</strong>
                     <ul class="mb-0 mt-1">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
@@ -183,8 +186,60 @@
                                     <label class="co-pay" for="pay_card">
                                         <input type="radio" name="payment_method" id="pay_card" value="CREDIT_CARD" checked>
                                         <i class="far fa-credit-card ico"></i>
-                                        <span><strong>Credit or debit card</strong><small>Visa, MasterCard, American Express</small></span>
+                                        <div class="flex-grow-1">
+                                            <strong>Credit or debit card</strong>
+                                            <small>Visa, MasterCard, American Express, Discover</small>
+                                        </div>
+                                        <div class="co-card-logos d-none d-sm-flex">
+                                            <i class="fab fa-cc-visa" style="color:#1a1f71"></i>
+                                            <i class="fab fa-cc-mastercard" style="color:#eb001b"></i>
+                                            <i class="fab fa-cc-amex" style="color:#006fcf"></i>
+                                            <i class="fab fa-cc-discover" style="color:#ff6000"></i>
+                                        </div>
                                     </label>
+
+                                    <!-- Authorize.Net Card Input Section -->
+                                    <div id="cardDetailsBox" class="co-card-box">
+                                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                            <span class="anet-shield">
+                                                <i class="fas fa-shield-alt text-success"></i> Authorize.Net &bull; 256-Bit SSL Encrypted
+                                            </span>
+                                            <span class="small text-muted"><i class="fas fa-lock me-1"></i> PCI-DSS Compliant</span>
+                                        </div>
+
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label class="form-label" for="card_name">Name on Card <span class="text-danger">*</span></label>
+                                                <input type="text" id="card_name" name="card_name" class="form-control" placeholder="John Doe" value="{{ old('card_name') }}">
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label" for="card_number">Card Number <span class="text-danger">*</span></label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-white border-end-0"><i class="far fa-credit-card text-muted" id="cardBrandIcon"></i></span>
+                                                    <input type="text" id="card_number" name="card_number" class="form-control border-start-0 font-monospace" placeholder="4000 1234 5678 9010" maxlength="19" autocomplete="cc-number" inputmode="numeric" value="{{ old('card_number') }}">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-7">
+                                                <label class="form-label" for="card_expiry">Expiration Date <span class="text-danger">*</span></label>
+                                                <input type="text" id="card_expiry" name="card_expiry" class="form-control text-center font-monospace" placeholder="MM / YY" maxlength="7" autocomplete="cc-exp" inputmode="numeric" value="{{ old('card_expiry') }}">
+                                            </div>
+
+                                            <div class="col-5">
+                                                <label class="form-label" for="card_cvv">Security (CVV) <span class="text-danger">*</span></label>
+                                                <div class="input-group">
+                                                    <input type="password" id="card_cvv" name="card_cvv" class="form-control text-center font-monospace" placeholder="CVC" maxlength="4" autocomplete="cc-csc" inputmode="numeric" value="{{ old('card_cvv') }}">
+                                                    <span class="input-group-text bg-white" title="3 digits on back (or 4 on front for Amex)"><i class="fas fa-question-circle text-muted" style="font-size:12px;"></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 text-muted small">
+                                            <i class="fas fa-info-circle me-1 text-primary"></i> Your payment is processed securely via <strong>Authorize.Net</strong>. Card numbers are never stored on our servers.
+                                        </div>
+                                    </div>
+
                                     <label class="co-pay" for="pay_paypal">
                                         <input type="radio" name="payment_method" id="pay_paypal" value="PAYPAL">
                                         <i class="fab fa-paypal ico"></i>
@@ -197,21 +252,7 @@
                                     </label>
                                 </div>
 
-                                <!-- Testing toggle: remove before going live -->
-                                <div class="co-sim">
-                                    <div class="fw-bold mb-1"><i class="fas fa-vial me-1"></i> Test mode: payment result</div>
-                                    <div class="text-muted mb-2">Choose whether this order succeeds or is declined, to test both order flows.</div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="simulate_payment_failure" id="sim_success" value="0" checked>
-                                        <label class="form-check-label text-success fw-semibold" for="sim_success">Success</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="simulate_payment_failure" id="sim_failed" value="1">
-                                        <label class="form-check-label text-danger fw-semibold" for="sim_failed">Card declined</label>
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="co-btn w-100 mt-4 py-3">
+                                <button type="submit" id="btnPlaceOrder" class="co-btn w-100 mt-4 py-3">
                                     <i class="fas fa-lock me-2"></i> Place order &mdash; ${{ number_format($cartData['total'], 2) }}
                                 </button>
                             </div>
@@ -284,6 +325,14 @@
 (function () {
     var form  = document.getElementById('checkoutForm');
     var steps = form.querySelectorAll('.co-step');
+    var cardBox = document.getElementById('cardDetailsBox');
+    var payRadios = form.querySelectorAll('input[name="payment_method"]');
+    var cardNumInput = document.getElementById('card_number');
+    var cardExpInput = document.getElementById('card_expiry');
+    var cardCvvInput = document.getElementById('card_cvv');
+    var cardNameInput = document.getElementById('card_name');
+    var cardBrandIcon = document.getElementById('cardBrandIcon');
+    var btnPlaceOrder = document.getElementById('btnPlaceOrder');
 
     function open(n) {
         steps.forEach(function (s) {
@@ -307,11 +356,83 @@
         return true;
     }
 
-    function v(id) { return (document.getElementById(id).value || '').trim(); }
+    function v(id) { 
+        var el = document.getElementById(id);
+        return el ? (el.value || '').trim() : ''; 
+    }
+
     function fillSummaries() {
         document.getElementById('sum1').textContent =
             v('customer_name') + ' · ' + v('shipping_address') + ', ' + v('city') + ', ' + v('state').toUpperCase() + ' ' + v('zip_code');
         document.getElementById('sum2').textContent = v('vehicle_details') || v('vin_number') || 'No vehicle details added';
+
+        // Pre-fill card name if empty
+        if (cardNameInput && !cardNameInput.value) {
+            cardNameInput.value = v('customer_name');
+        }
+    }
+
+    // Payment method switcher
+    function syncPaymentMethod() {
+        var isCard = document.getElementById('pay_card').checked;
+        if (cardBox) {
+            cardBox.style.display = isCard ? 'block' : 'none';
+        }
+        if (cardNumInput) cardNumInput.required = isCard;
+        if (cardExpInput) cardExpInput.required = isCard;
+        if (cardCvvInput) cardCvvInput.required = isCard;
+    }
+
+    payRadios.forEach(function (radio) {
+        radio.addEventListener('change', syncPaymentMethod);
+    });
+    syncPaymentMethod();
+
+    // Format Card Number & detect brand
+    if (cardNumInput) {
+        cardNumInput.addEventListener('input', function (e) {
+            var val = this.value.replace(/\D/g, '').substring(0, 16);
+            var parts = [];
+            for (var i = 0; i < val.length; i += 4) {
+                parts.push(val.substring(i, i + 4));
+            }
+            this.value = parts.join(' ');
+
+            // Card Brand Detection
+            if (cardBrandIcon) {
+                cardBrandIcon.className = 'text-muted';
+                if (/^4/.test(val)) {
+                    cardBrandIcon.className = 'fab fa-cc-visa text-primary';
+                } else if (/^(5[1-5]|2[2-7])/.test(val)) {
+                    cardBrandIcon.className = 'fab fa-cc-mastercard text-danger';
+                } else if (/^3[47]/.test(val)) {
+                    cardBrandIcon.className = 'fab fa-cc-amex text-info';
+                } else if (/^(6011|65)/.test(val)) {
+                    cardBrandIcon.className = 'fab fa-cc-discover text-warning';
+                } else {
+                    cardBrandIcon.className = 'far fa-credit-card text-muted';
+                }
+            }
+        });
+    }
+
+    // Format Expiration Date (MM / YY)
+    if (cardExpInput) {
+        cardExpInput.addEventListener('input', function () {
+            var val = this.value.replace(/\D/g, '').substring(0, 4);
+            if (val.length >= 3) {
+                this.value = val.substring(0, 2) + ' / ' + val.substring(2);
+            } else {
+                this.value = val;
+            }
+        });
+    }
+
+    // Format CVV
+    if (cardCvvInput) {
+        cardCvvInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').substring(0, 4);
+        });
     }
 
     form.querySelectorAll('[data-next]').forEach(function (b) {
@@ -322,17 +443,62 @@
             open(next);
         });
     });
+
     form.querySelectorAll('[data-edit]').forEach(function (b) {
         b.addEventListener('click', function () { open(+b.dataset.edit); });
     });
 
-    // Final guard: block submit if step 1 is incomplete, and jump back to it.
+    // Guard on submission
     form.addEventListener('submit', function (e) {
-        if (!valid(1)) { e.preventDefault(); open(1); }
+        if (!valid(1)) {
+            e.preventDefault();
+            open(1);
+            return;
+        }
+
+        var isCard = document.getElementById('pay_card').checked;
+        if (isCard) {
+            var numClean = (cardNumInput.value || '').replace(/\D/g, '');
+            if (numClean.length < 13) {
+                e.preventDefault();
+                open(3);
+                alert('Please enter a valid card number.');
+                cardNumInput.focus();
+                return;
+            }
+            var expClean = (cardExpInput.value || '').replace(/\D/g, '');
+            if (expClean.length < 4) {
+                e.preventDefault();
+                open(3);
+                alert('Please enter a valid card expiration date (MM / YY).');
+                cardExpInput.focus();
+                return;
+            }
+            var cvvClean = (cardCvvInput.value || '').trim();
+            if (cvvClean.length < 3) {
+                e.preventDefault();
+                open(3);
+                alert('Please enter a valid 3 or 4 digit CVV/CVC code.');
+                cardCvvInput.focus();
+                return;
+            }
+        }
+
+        // Processing state
+        if (btnPlaceOrder) {
+            btnPlaceOrder.disabled = true;
+            btnPlaceOrder.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Securely Processing via Authorize.Net...';
+        }
     });
 
-    // If the server returned validation errors / old input, start with step 1 open.
-    @if ($errors->any()) open(1); @endif
+    // If server returned validation errors, open step 1 or 3 depending on error
+    @if (isset($errors) && $errors->any())
+        @if ($errors->has('card_number') || $errors->has('card_expiry') || $errors->has('card_cvv'))
+            open(3);
+        @else
+            open(1);
+        @endif
+    @endif
 })();
 </script>
 @endsection

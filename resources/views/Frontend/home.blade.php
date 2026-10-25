@@ -113,7 +113,7 @@
                                     <h5>About Auto Vehicle Parts</h5>
                                     <h2>Certified OEM Used Auto Parts You Can Trust</h2>                                   
                                 </div>
-                                   <p>At Auto Vehicle Parts, we connect drivers, mechanics, and collision centers with thousands of verified OEM recycled car parts across North America. Instead of overpaying for costly dealership parts or settling for poor-quality aftermarket copies, get original factory components built to last.</p>
+                                   <p>At Auto Vehicle Parts, we connect drivers, mechanics, and collision centers with thousands of verified OEM Used car parts across North America. Instead of overpaying for costly dealership parts or settling for poor-quality aftermarket copies, get original factory components built to last.</p>
                                     <p>Every engine undergoes compression and leak testing, and every transmission is shift-tested before shipping. We inspect every detail to ensure you receive reliable, road-ready parts every single time.</p>
                                     <div class="about-content3">
                                     <div class="row">
@@ -498,7 +498,7 @@
                                 </div>                    
                                 <div class="blog-content2">    
                                     <h4><a href="/shop">OEM Recycled vs Aftermarket Parts: Maximizing Savings &amp; Quality</a></h4> 
-                                    <p>Understand the critical differences between genuine factory recycled car parts and replica aftermarket copies, saving you up to 70% with OEM reliability.</p>
+                                    <p>Understand the critical differences between genuine factory Used car parts and replica aftermarket copies, saving you up to 70% with OEM reliability.</p>
                                 </div>
                             </div>
                         </div>

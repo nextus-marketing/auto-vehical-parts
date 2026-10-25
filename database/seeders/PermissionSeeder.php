@@ -409,8 +409,8 @@ class PermissionSeeder extends Seeder
                 'SuperAdmin',
             ],
             'mobile' => '8928678948',
-            'email' => 'siddhesh@gmail.com',
-            'password' => 'sonavane@2003'
+            'email' => 'admin@autovehicleparts.com',
+            'password' => 'Yusuf@2026'
         ],
     ];
 

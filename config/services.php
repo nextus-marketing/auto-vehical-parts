@@ -31,4 +31,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'authorizenet' => [
+        'api_login_id' => env('AUTHORIZENET_API_LOGIN_ID', '62sr4UT27YxV'),
+        'transaction_key' => env('AUTHORIZENET_TRANSACTION_KEY', '3es7S5Ln7p6DBX9T'),
+        'mode' => env('AUTHORIZENET_MODE', 'PRODUCTION'), // 'PRODUCTION' or 'SANDBOX'
+    ],
+
 ];
+

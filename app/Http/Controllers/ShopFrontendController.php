@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\AuthorizeNetService;
 use Illuminate\Support\Str;
 
 class ShopFrontendController extends Controller
@@ -313,98 +314,138 @@ class ShopFrontendController extends Controller
     }
 
     /**
-     * Process Checkout & Payment (Creates Success or Failed Order)
+     * Process Checkout & Payment via Authorize.Net
      */
-    public function processCheckout(Request $request)
-    {
-        $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'customer_email' => 'required|email|max:255',
-            'customer_phone' => 'required|string|max:50',
-            'shipping_address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-            'zip_code' => 'required|string|max:20',
-            'payment_method' => 'required|in:CREDIT_CARD,PAYPAL,CASH_ON_DELIVERY',
-        ]);
+     public function processCheckout(Request $request)
+     {
+         $validationRules = [
+             'customer_name' => 'required|string|max:255',
+             'customer_email' => 'required|email|max:255',
+             'customer_phone' => 'required|string|max:50',
+             'shipping_address' => 'required|string|max:255',
+             'city' => 'required|string|max:100',
+             'state' => 'required|string|max:100',
+             'zip_code' => 'required|string|max:20',
+             'payment_method' => 'required|in:CREDIT_CARD,PAYPAL,CASH_ON_DELIVERY',
+         ];
 
-        $cartData = $this->getCartData();
+         if ($request->payment_method === 'CREDIT_CARD') {
+             $validationRules['card_number'] = 'required|string|min:12|max:24';
+             $validationRules['card_expiry'] = 'required|string|min:4|max:7';
+             $validationRules['card_cvv'] = 'required|string|min:3|max:4';
+         }
 
-        if (empty($cartData['items'])) {
-            return redirect()->route('shop')->with('error', 'Your cart is empty.');
-        }
+         $request->validate($validationRules);
 
-        // Generate Order Number
-        $orderNumber = 'AVP-' . date('Y') . '-' . strtoupper(Str::random(6));
+         $cartData = $this->getCartData();
 
-        // Determine if simulation triggers failure (user can test failed payment)
-        $simulateFailure = $request->input('simulate_payment_failure') == '1';
+         if (empty($cartData['items'])) {
+             return redirect()->route('shop')->with('error', 'Your cart is empty.');
+         }
 
-        $paymentStatus = $simulateFailure ? 'FAILED' : 'SUCCESS';
-        $orderStatus = $simulateFailure ? 'FAILED' : 'CONFIRMED';
-        $failureReason = $simulateFailure 
-            ? 'Card declined by issuing bank (Simulated Test: Insufficient Funds / Invalid CVC code).'
-            : null;
-        $transactionId = $simulateFailure 
-            ? 'txn_declined_' . strtolower(Str::random(12))
-            : 'txn_' . strtolower(Str::random(16));
+         // Generate Order Number
+         $orderNumber = 'AVP-' . date('Y') . '-' . strtoupper(Str::random(6));
 
-        $order = Order::create([
-            'order_number' => $orderNumber,
-            'user_id' => auth()->check() ? auth()->id() : null,
-            'customer_name' => $request->customer_name,
-            'customer_email' => $request->customer_email,
-            'customer_phone' => $request->customer_phone,
-            'shipping_address' => $request->shipping_address,
-            'city' => $request->city,
-            'state' => $request->state,
-            'zip_code' => $request->zip_code,
-            'country' => 'USA',
-            'vin_number' => $request->vin_number,
-            'vehicle_details' => $request->vehicle_details ?: ($request->vehicle_year . ' ' . $request->vehicle_make . ' ' . $request->vehicle_model),
-            'subtotal' => $cartData['subtotal'],
-            'coupon_code' => $cartData['coupon']['code'] ?? null,
-            'discount_amount' => $cartData['discount'],
-            'shipping_amount' => $cartData['shipping'],
-            'tax_amount' => $cartData['tax'],
-            'total_amount' => $cartData['total'],
-            'currency' => 'USD',
-            'payment_method' => $request->payment_method,
-            'payment_status' => $paymentStatus,
-            'order_status' => $orderStatus,
-            'transaction_id' => $transactionId,
-            'failure_reason' => $failureReason,
-            'notes' => $request->order_notes,
-        ]);
+         $paymentStatus = 'SUCCESS';
+         $orderStatus = 'CONFIRMED';
+         $failureReason = null;
+         $transactionId = 'TXN-' . strtoupper(Str::random(12));
 
-        // Create Order Items
-        foreach ($cartData['items'] as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item['id'],
-                'product_name' => $item['name'],
-                'part_number' => $item['part_number'] ?? null,
-                'price' => $item['price'],
-                'quantity' => $item['quantity'],
-                'total' => round($item['price'] * $item['quantity'], 2),
-            ]);
-        }
+         if ($request->payment_method === 'CREDIT_CARD') {
+             $authNet = app(AuthorizeNetService::class);
+             $chargeResult = $authNet->chargeCreditCard([
+                 'amount' => $cartData['total'],
+                 'card_number' => $request->card_number,
+                 'card_expiry' => $request->card_expiry,
+                 'card_code' => $request->card_cvv,
+                 'customer_name' => $request->customer_name,
+                 'customer_email' => $request->customer_email,
+                 'customer_phone' => $request->customer_phone,
+                 'shipping_address' => $request->shipping_address,
+                 'city' => $request->city,
+                 'state' => $request->state,
+                 'zip_code' => $request->zip_code,
+                 'order_number' => $orderNumber,
+                 'description' => 'Auto Vehicle Parts - Order #' . $orderNumber,
+             ]);
 
-        // Increment coupon count if success
-        if ($paymentStatus === 'SUCCESS' && !empty($cartData['coupon']['code'])) {
-            Coupon::where('code', $cartData['coupon']['code'])->increment('used_count');
-        }
+             if ($chargeResult['success']) {
+                 $paymentStatus = 'SUCCESS';
+                 $orderStatus = 'CONFIRMED';
+                 $transactionId = $chargeResult['transaction_id'] ?: ('ANET_' . Str::random(12));
+                 $failureReason = null;
+             } else {
+                 $paymentStatus = 'FAILED';
+                 $orderStatus = 'FAILED';
+                 $transactionId = $chargeResult['transaction_id'] ?: ('ANET_DECLINED_' . Str::random(8));
+                 $failureReason = $chargeResult['error'] ?? 'Your card was declined by the payment gateway.';
+             }
+         } elseif ($request->payment_method === 'PAYPAL') {
+             $paymentStatus = 'PENDING';
+             $orderStatus = 'PROCESSING';
+             $transactionId = 'PP_' . strtoupper(Str::random(12));
+         } elseif ($request->payment_method === 'CASH_ON_DELIVERY') {
+             $paymentStatus = 'PENDING';
+             $orderStatus = 'CONFIRMED';
+             $transactionId = 'COD_' . strtoupper(Str::random(10));
+         }
 
-        // Clear cart session
-        session()->forget('cart');
-        session()->forget('applied_coupon');
+         $order = Order::create([
+             'order_number' => $orderNumber,
+             'user_id' => auth()->check() ? auth()->id() : null,
+             'customer_name' => $request->customer_name,
+             'customer_email' => $request->customer_email,
+             'customer_phone' => $request->customer_phone,
+             'shipping_address' => $request->shipping_address,
+             'city' => $request->city,
+             'state' => $request->state,
+             'zip_code' => $request->zip_code,
+             'country' => 'USA',
+             'vin_number' => $request->vin_number,
+             'vehicle_details' => $request->vehicle_details ?: ($request->vehicle_year . ' ' . $request->vehicle_make . ' ' . $request->vehicle_model),
+             'subtotal' => $cartData['subtotal'],
+             'coupon_code' => $cartData['coupon']['code'] ?? null,
+             'discount_amount' => $cartData['discount'],
+             'shipping_amount' => $cartData['shipping'],
+             'tax_amount' => $cartData['tax'],
+             'total_amount' => $cartData['total'],
+             'currency' => 'USD',
+             'payment_method' => $request->payment_method,
+             'payment_status' => $paymentStatus,
+             'order_status' => $orderStatus,
+             'transaction_id' => $transactionId,
+             'failure_reason' => $failureReason,
+             'notes' => $request->order_notes,
+         ]);
 
-        if ($paymentStatus === 'SUCCESS') {
-            return redirect()->route('order.success', ['order_number' => $order->order_number]);
-        } else {
-            return redirect()->route('order.failed', ['order_number' => $order->order_number]);
-        }
-    }
+         // Create Order Items
+         foreach ($cartData['items'] as $item) {
+             OrderItem::create([
+                 'order_id' => $order->id,
+                 'product_id' => $item['id'],
+                 'product_name' => $item['name'],
+                 'part_number' => $item['part_number'] ?? null,
+                 'price' => $item['price'],
+                 'quantity' => $item['quantity'],
+                 'total' => round($item['price'] * $item['quantity'], 2),
+             ]);
+         }
+
+         if ($paymentStatus === 'SUCCESS') {
+             if (!empty($cartData['coupon']['code'])) {
+                 Coupon::where('code', $cartData['coupon']['code'])->increment('used_count');
+             }
+             // Clear cart session only on success
+             session()->forget('cart');
+             session()->forget('applied_coupon');
+
+             return redirect()->route('order.success', ['order_number' => $order->order_number]);
+         } else {
+             // Keep cart intact so customer can retry easily
+             return redirect()->route('order.failed', ['order_number' => $order->order_number])
+                 ->with('error', $failureReason);
+         }
+     }
 
     /**
      * Order Success Confirmation Page

@@ -129,7 +129,7 @@
                         </div>
                         <div class="col-lg-6 col-md-6 text-right">
                             <div class="header-social">
-                                <span>Certified OEM Recycled Car &amp; Truck Auto Parts Nationwide (USA)</span>
+                                <span>Certified OEM Used Car Parts</span>
                             </div>
                         </div>
                     </div>
@@ -154,7 +154,6 @@
                                             <!-- Dynamic Categories Dropdown -->
                                             <li class="has-sub"><a href="/shop">Shop Auto Parts</a>
 												<ul>
-                                                    <li><a href="/shop"><strong>View All Auto Parts</strong></a></li>
                                                     @php
                                                         $navCategories = \App\Models\Category::where('status', 'ACTIVE')->orderBy('index', 'asc')->get();
                                                     @endphp
@@ -219,7 +218,7 @@
                                     <h2>About Auto Vehicle Parts</h2>
                                 </div>
                                 <div class="f-contact">
-                                     <p>Auto Vehicle Parts is America's trusted supplier of quality-tested OEM used car parts. We stock certified used engines, transmissions, body panels, and electrical assemblies with industry-leading warranties and fast nationwide shipping.</p>
+                                     <p>The entire team at Auto Vehicle Parts is dedicated to providing used auto parts across the USA for any domestic or foreign manufactured car, van, or SUV. We deliver in all 50 states. We save you from calling and chasing the parts you need from many sources. Just call the Auto Vehicle Parts team and lean back.</p>
                                 </div>
                                  <div class="footer-social mt-10">                                    
                                     <a href="https://facebook.com" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
@@ -291,7 +290,7 @@
                     <div class="row align-items-center">
                         <div class="col-lg-6">
                           <div class="copy-text">
-                                 Copyright &copy; Auto Vehicle Parts 2026. All rights reserved. Sourced from certified automotive dismantlers.
+                                 Copyright &copy; Auto Vehicle Parts 2026. All rights reserved.
                             </div>
                         </div>
                     </div>

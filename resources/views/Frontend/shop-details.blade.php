@@ -351,7 +351,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Part Condition</td><td>Certified Pre-Owned OEM Recycled Component</td></tr>
+                                    <tr><td>Part Condition</td><td>Certified Pre-Owned OEM Used Component</td></tr>
                                     <tr><td>Part / Casting Number</td><td><code>{{ $product->part_number ?: 'OEM-STANDARD' }}</code></td></tr>
                                     <tr><td>Donor Mileage</td><td>{{ $product->mileage ?: 'Verified 54,200 Original Miles' }}</td></tr>
                                     <tr><td>Testing Procedure</td><td>Cold compression tested, borescope cylinder wall inspection, and leak-down test passed.</td></tr>
