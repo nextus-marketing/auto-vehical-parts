@@ -64,6 +64,16 @@ Route::get('/return-policy', function () {
     return view('Frontend.return-policy');
 })->name('return-policy');
 
+// Fallback route for storage files when PHP symlink() is disabled on shared hosting
+Route::get('/storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    return response()->file($filePath);
+})->where('path', '.*')->name('storage.fallback');
+
 require __DIR__ . '/auth.php';
 require __DIR__ . '/backend.php';
 require __DIR__ . '/frontend.php';
+
