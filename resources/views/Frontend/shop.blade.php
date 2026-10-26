@@ -239,11 +239,11 @@
     <section class="mk">
 
         <!-- Keystone scrolling ticker -->
-        <div class="mk-ticker" aria-label="After-Market Products Sold By Keystone. Tested, inspected and genuine OEM quality, fitment guaranteed.">
+        <div class="mk-ticker" aria-label="Aftermarket Products Sold By Keystone. Tested, inspected and genuine OEM quality, fitment guaranteed.">
             <div class="mk-ticker-track">
                 @for ($t = 0; $t < 2; $t++)
                     <div class="mk-ticker-group" @if($t == 1) aria-hidden="true" @endif>
-                        <span><i class="fas fa-shield-alt"></i> After-Market Products Sold By Keystone</span>
+                        <span><i class="fas fa-shield-alt"></i> Aftermarket Products Sold By Keystone</span>
                         <span><i class="fas fa-check-circle"></i> Tested &amp; inspected</span>
                         <span><i class="fas fa-cog"></i> Genuine OEM quality</span>
                         <span><i class="fas fa-car"></i> Fitment guaranteed</span>

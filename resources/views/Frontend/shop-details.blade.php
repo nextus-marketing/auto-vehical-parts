@@ -317,7 +317,7 @@
                     <div class="pd-note">
                         <div class="pd-note-head">
                             <i class="fas fa-shield-alt"></i>
-                            <span>After-Market Products Sold By Keystone</span>
+                            <span>Aftermarket Products Sold By Keystone</span>
                         </div>
                         <ul class="pd-note-list">
                             <li><i class="fas fa-check-circle"></i> Tested &amp; inspected</li>
