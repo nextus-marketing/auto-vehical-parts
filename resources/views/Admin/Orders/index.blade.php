@@ -18,19 +18,19 @@
                         <li class="nav-item">
                             <button class="nav-link {{ $type == 'all' ? 'active' : '' }}" onclick="filterOrders('')">
                                 <i class="ti ti-list me-1"></i> All Orders 
-                                <span class="badge bg-secondary ms-1">{{ $allCount }}</span>
+                                <span class="badge bg-secondary ms-1" id="order-count-all">{{ $allCount }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
                             <button class="nav-link {{ $type == 'success' ? 'active' : '' }} text-success" onclick="filterOrders('SUCCESS')">
                                 <i class="ti ti-check-circle me-1"></i> Successful Orders 
-                                <span class="badge bg-success ms-1">{{ $successCount }}</span>
+                                <span class="badge bg-success ms-1" id="order-count-success">{{ $successCount }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
                             <button class="nav-link {{ $type == 'failed' ? 'active' : '' }} text-danger" onclick="filterOrders('FAILED')">
                                 <i class="ti ti-alert-triangle me-1"></i> Failed Orders 
-                                <span class="badge bg-danger ms-1">{{ $failedCount }}</span>
+                                <span class="badge bg-danger ms-1" id="order-count-failed">{{ $failedCount }}</span>
                             </button>
                         </li>
                     </ul>
@@ -105,6 +105,7 @@
             var name = $(this).data('name');
             if (!confirm('Are you sure you want to permanently delete order "' + name + '" and all its items? This cannot be undone.')) return;
             var btn = $(this);
+            var row = btn.closest('tr');
             btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
             $.ajax({
                 type: 'DELETE',
@@ -112,10 +113,22 @@
                 data: { _token: '{{ csrf_token() }}' },
                 success: function(response) {
                     toastr.success(response.message || 'Order deleted successfully.');
-                    dataTable.ajax.reload(null, false);
+                    if (response.allCount !== undefined) {
+                        $('#order-count-all').text(response.allCount);
+                    }
+                    if (response.successCount !== undefined) {
+                        $('#order-count-success').text(response.successCount);
+                    }
+                    if (response.failedCount !== undefined) {
+                        $('#order-count-failed').text(response.failedCount);
+                    }
+                    row.fadeOut(300, function() {
+                        dataTable.ajax.reload(null, false);
+                    });
                 },
-                error: function() {
-                    toastr.error('Failed to delete order.');
+                error: function(xhr) {
+                    var errorMsg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Failed to delete order.';
+                    toastr.error(errorMsg);
                     btn.prop('disabled', false).html('<i class="ti ti-trash"></i>');
                 }
             });

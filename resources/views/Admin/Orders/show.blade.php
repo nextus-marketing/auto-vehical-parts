@@ -192,8 +192,9 @@
                     window.location.href = "{{ route('admin.orders.index') }}";
                 }, 1200);
             },
-            error: function() {
-                toastr.error('Failed to delete order.');
+            error: function(xhr) {
+                var errorMsg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Failed to delete order.';
+                toastr.error(errorMsg);
                 btn.prop('disabled', false).html('<i class="ti ti-trash me-1"></i> Delete Order');
             }
         });

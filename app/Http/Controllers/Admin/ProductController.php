@@ -155,12 +155,36 @@ class ProductController extends Controller
         ], 200);
     }
 
-    public function destroy(Product $product)
+    public function destroy($product)
     {
-        $product->delete();
+        $prod = ($product instanceof Product) ? $product : Product::find($product);
+        if (!$prod) {
+            $decodedId = \Hashids::connection(Product::class)->decode($product)[0] ?? null;
+            $prod = Product::find($decodedId);
+        }
+        if (!$prod) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Product not found.'
+            ], 404);
+        }
+
+        $name = $prod->name;
+        if ($prod->photo && Storage::disk('public')->exists($prod->photo)) {
+            Storage::disk('public')->delete($prod->photo);
+        }
+        if (is_array($prod->other_photo)) {
+            foreach ($prod->other_photo as $file) {
+                if (Storage::disk('public')->exists($file)) {
+                    Storage::disk('public')->delete($file);
+                }
+            }
+        }
+        $prod->delete();
+
         return response()->json([
             'status' => 'success',
-            'message' => 'Product deleted successfully.'
+            'message' => 'Product "' . $name . '" deleted permanently.'
         ]);
     }
 

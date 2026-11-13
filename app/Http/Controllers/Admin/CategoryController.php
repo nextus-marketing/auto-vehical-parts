@@ -111,12 +111,27 @@ class CategoryController extends Controller
         ], 200);
     }
 
-    public function destroy(Category $category)
+    public function destroy($category)
     {
-        $category->delete();
+        $cat = ($category instanceof Category) ? $category : Category::find($category);
+        if (!$cat) {
+            $decodedId = \Hashids::connection(Category::class)->decode($category)[0] ?? null;
+            $cat = Category::find($decodedId);
+        }
+        if (!$cat) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Category not found.'
+            ], 404);
+        }
+
+        $name = $cat->name;
+        $cat->products()->delete();
+        $cat->delete();
+
         return response()->json([
             'status' => 'success',
-            'message' => 'Category deleted successfully'
+            'message' => 'Category "' . $name . '" and its associated products deleted successfully.'
         ]);
     }
 

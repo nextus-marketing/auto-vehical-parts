@@ -25,6 +25,7 @@ class PermissionSeeder extends Seeder
                 'crud-update' => [
                     'edit',
                     'update',
+                    'destroy',
                 ],
                 'crud-generate' => [
                     'generate',
@@ -57,6 +58,7 @@ class PermissionSeeder extends Seeder
                     'edit',
                     'update',
                     'changeStatus',
+                    'destroy',
                 ],
                 'role-permission' => [
                     'permissionsShow',
@@ -101,6 +103,7 @@ class PermissionSeeder extends Seeder
                     'edit',
                     'update',
                     'changeStatus',
+                    'destroy',
                 ],
             ]
         ],
@@ -117,7 +120,7 @@ class PermissionSeeder extends Seeder
 
                 ],
                 'enquiry-update' => [
-
+                    'destroy',
                 ],
             ]
         ],
@@ -138,6 +141,7 @@ class PermissionSeeder extends Seeder
                     'edit',
                     'update',
                     'changeStatus',
+                    'destroy',
                 ],
             ]
         ],
@@ -159,6 +163,7 @@ class PermissionSeeder extends Seeder
                     'update',
                     'changeStatus',
                     'changeHomeFeaturedStatus',
+                    'destroy',
                 ],
             ]
         ],
@@ -180,6 +185,7 @@ class PermissionSeeder extends Seeder
                     'update',
                     'changeStatus',
                     'changeHomeFeaturedStatus',
+                    'destroy',
                 ],
             ]
         ],
@@ -201,6 +207,7 @@ class PermissionSeeder extends Seeder
                     'update',
                     'changeStatus',
                     'changeHomeFeaturedStatus',
+                    'destroy',
                 ],
             ]
         ],
@@ -223,6 +230,7 @@ class PermissionSeeder extends Seeder
                     'edit',
                     'update',
                     'changeStatus',
+                    'destroy',
                 ],
             ]
         ],
@@ -245,6 +253,7 @@ class PermissionSeeder extends Seeder
                     'edit',
                     'update',
                     'changeStatus',
+                    'destroy',
                 ],
             ]
         ],
@@ -267,6 +276,7 @@ class PermissionSeeder extends Seeder
                     'edit',
                     'update',
                     'changeStatus',
+                    'destroy',
                 ],
             ]
         ],
@@ -287,6 +297,7 @@ class PermissionSeeder extends Seeder
                     'edit',
                     'update',
                     'changeStatus',
+                    'destroy',
                 ],
             ]
         ],
@@ -310,6 +321,7 @@ class PermissionSeeder extends Seeder
                     'edit',
                     'update',
                     'changeStatus',
+                    'destroy',
                 ],
             ]
         ],

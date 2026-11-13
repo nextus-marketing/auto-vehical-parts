@@ -92,12 +92,32 @@ class OrderController extends Controller
 
     public function destroy($id)
     {
-        $order = Order::with('items')->findOrFail($id);
+        $decodedId = \Hashids::connection(Order::class)->decode($id)[0] ?? $id;
+        $order = Order::with('items')->find($decodedId);
+        if (!$order) {
+            $order = Order::with('items')->find($id);
+        }
+        if (!$order) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Order not found.'
+            ], 404);
+        }
+
+        $orderNumber = $order->order_number;
         $order->items()->delete();
         $order->delete();
+
+        $allCount = Order::count();
+        $successCount = Order::where('payment_status', 'SUCCESS')->count();
+        $failedCount = Order::where('payment_status', 'FAILED')->count();
+
         return response()->json([
             'status' => 'success',
-            'message' => 'Order ' . $order->order_number . ' deleted permanently.'
+            'message' => 'Order ' . $orderNumber . ' deleted permanently.',
+            'allCount' => $allCount,
+            'successCount' => $successCount,
+            'failedCount' => $failedCount,
         ]);
     }
 

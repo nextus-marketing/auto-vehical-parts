@@ -96,6 +96,7 @@
             var name = $(this).data('name');
             if (!confirm('Are you sure you want to permanently delete "' + name + '"? This cannot be undone.')) return;
             var btn = $(this);
+            var row = btn.closest('tr');
             btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
             $.ajax({
                 type: 'DELETE',
@@ -103,10 +104,13 @@
                 data: { _token: '{{ csrf_token() }}' },
                 success: function(response) {
                     toastr.success(response.message || 'Product deleted successfully.');
-                    dataTable.ajax.reload(null, false);
+                    row.fadeOut(300, function() {
+                        dataTable.ajax.reload(null, false);
+                    });
                 },
-                error: function() {
-                    toastr.error('Failed to delete product.');
+                error: function(xhr) {
+                    var errorMsg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Failed to delete product.';
+                    toastr.error(errorMsg);
                     btn.prop('disabled', false).html('<i class="ti ti-trash"></i>');
                 }
             });

@@ -113,12 +113,26 @@ class CouponController extends Controller
         ], 200);
     }
 
-    public function destroy(Coupon $coupon)
+    public function destroy($coupon)
     {
-        $coupon->delete();
+        $coup = ($coupon instanceof Coupon) ? $coupon : Coupon::find($coupon);
+        if (!$coup) {
+            $decodedId = \Hashids::connection(Coupon::class)->decode($coupon)[0] ?? null;
+            $coup = Coupon::find($decodedId);
+        }
+        if (!$coup) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Coupon not found.'
+            ], 404);
+        }
+
+        $code = $coup->code;
+        $coup->delete();
+
         return response()->json([
             'status' => 'success',
-            'message' => 'Coupon "' . $coupon->code . '" deleted permanently.'
+            'message' => 'Coupon "' . $code . '" deleted permanently.'
         ]);
     }
 
