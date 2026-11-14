@@ -220,11 +220,72 @@
         }
         .mk-empty.is-visible { display: block; }
 
+        /* ===== Pagination (fixed) ===== */
         .pagination-wrap {
             margin-top: 35px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
+        .pagination-wrap nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .pagination-wrap p { margin: 0; font-size: 13px; color: var(--mk-muted); }
+
+        .pagination-wrap .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .pagination-wrap .page-link {
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0c2957;
+            background: #fff;
+            border: 1px solid var(--mk-line);
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all .15s;
+        }
+        .pagination-wrap .page-link:hover {
+            background: #eef2f6;
+            border-color: #0c2957;
+            color: #0c2957;
+        }
+        .pagination-wrap .page-item.active .page-link {
+            background: #0c2957;
+            border-color: #0c2957;
+            color: #fff;
+        }
+        .pagination-wrap .page-item.disabled .page-link {
+            color: #aab0b7;
+            background: #f3f4f6;
+            pointer-events: none;
+        }
+        /* Safety net: never let a stray SVG icon blow up */
+        .pagination-wrap svg { width: 16px; height: 16px; }
+        .pagination-wrap .d-none.flex-sm-fill {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .pagination-wrap .d-sm-none { display: none !important; }
+        /* ================================ */
 
         @media (max-width: 1199px) { .mk-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media (max-width: 991px)  { .mk-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -352,10 +413,10 @@
                 <button type="button" id="mkReset" style="margin-top:12px; background:#e81c2e; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;">Clear filters</button>
             </div>
 
-            <!-- Laravel Pagination Links -->
+            <!-- Laravel Pagination Links (Bootstrap view, styled above) -->
             @if($products->hasPages())
                 <div class="pagination-wrap">
-                    {{ $products->links() }}
+                    {{ $products->onEachSide(1)->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>
