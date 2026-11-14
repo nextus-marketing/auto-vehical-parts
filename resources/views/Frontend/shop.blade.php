@@ -220,72 +220,101 @@
         }
         .mk-empty.is-visible { display: block; }
 
-        /* ===== Pagination (fixed) ===== */
-        .pagination-wrap {
+        /* ===== Pagination (hardened against theme overrides) ===== */
+        .mk .pagination-wrap {
             margin-top: 35px;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
         }
-        .pagination-wrap nav {
+        .mk .pagination-wrap nav {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
         }
-        .pagination-wrap p { margin: 0; font-size: 13px; color: var(--mk-muted); }
-
-        .pagination-wrap .pagination {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-        .pagination-wrap .page-link {
-            min-width: 40px;
-            height: 40px;
-            padding: 0 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 600;
-            color: #0c2957;
-            background: #fff;
-            border: 1px solid var(--mk-line);
-            border-radius: 6px;
-            text-decoration: none;
-            transition: all .15s;
-        }
-        .pagination-wrap .page-link:hover {
-            background: #eef2f6;
-            border-color: #0c2957;
-            color: #0c2957;
-        }
-        .pagination-wrap .page-item.active .page-link {
-            background: #0c2957;
-            border-color: #0c2957;
-            color: #fff;
-        }
-        .pagination-wrap .page-item.disabled .page-link {
-            color: #aab0b7;
-            background: #f3f4f6;
-            pointer-events: none;
-        }
-        /* Safety net: never let a stray SVG icon blow up */
-        .pagination-wrap svg { width: 16px; height: 16px; }
-        .pagination-wrap .d-none.flex-sm-fill {
+        .mk .pagination-wrap p { margin: 0; font-size: 13px; color: var(--mk-muted); }
+        .mk .pagination-wrap .d-none.flex-sm-fill {
             display: flex !important;
             flex-direction: column;
             align-items: center;
             gap: 10px;
         }
-        .pagination-wrap .d-sm-none { display: none !important; }
-        /* ================================ */
+        .mk .pagination-wrap .d-sm-none { display: none !important; }
+
+        .mk .pagination-wrap ul.pagination {
+            display: flex !important;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin: 0 !important;
+            padding: 0 !important;
+            list-style: none !important;
+        }
+        .mk .pagination-wrap ul.pagination > li {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: none !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            width: auto !important;
+            height: auto !important;
+        }
+        /* every state of every item: same size, same shape, no theme effects */
+        .mk .pagination-wrap ul.pagination > li > a,
+        .mk .pagination-wrap ul.pagination > li > span,
+        .mk .pagination-wrap ul.pagination > li > a:hover,
+        .mk .pagination-wrap ul.pagination > li > a:focus,
+        .mk .pagination-wrap ul.pagination > li > a:active {
+            box-sizing: border-box !important;
+            min-width: 40px !important;
+            width: auto !important;
+            height: 40px !important;
+            margin: 0 !important;
+            padding: 0 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            line-height: 1 !important;
+            color: #0c2957 !important;
+            background: #fff !important;
+            border: 1px solid var(--mk-line) !important;
+            border-radius: 6px !important;
+            box-shadow: none !important;
+            transform: none !important;
+            text-decoration: none !important;
+            transition: background .15s, border-color .15s, color .15s;
+        }
+        .mk .pagination-wrap ul.pagination > li > a:hover,
+        .mk .pagination-wrap ul.pagination > li > a:focus {
+            background: #eef2f6 !important;
+            border-color: #0c2957 !important;
+        }
+        .mk .pagination-wrap ul.pagination > li.active > span,
+        .mk .pagination-wrap ul.pagination > li.active > a {
+            background: #0c2957 !important;
+            border-color: #0c2957 !important;
+            color: #fff !important;
+        }
+        .mk .pagination-wrap ul.pagination > li.disabled > span,
+        .mk .pagination-wrap ul.pagination > li.disabled > a {
+            background: #f3f4f6 !important;
+            color: #aab0b7 !important;
+            pointer-events: none;
+        }
+        /* kill any theme pseudo-element decorations (circles, ripples) */
+        .mk .pagination-wrap ul.pagination > li::before,
+        .mk .pagination-wrap ul.pagination > li::after,
+        .mk .pagination-wrap ul.pagination > li > a::before,
+        .mk .pagination-wrap ul.pagination > li > a::after,
+        .mk .pagination-wrap ul.pagination > li > span::before,
+        .mk .pagination-wrap ul.pagination > li > span::after { display: none !important; content: none !important; }
+        .mk .pagination-wrap svg { width: 16px; height: 16px; }
+        /* ======================================================== */
 
         @media (max-width: 1199px) { .mk-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media (max-width: 991px)  { .mk-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
