@@ -363,7 +363,7 @@
                     </button>
                     @foreach ($categories as $c)
                         <button type="button" class="mk-chip {{ ($categorySlug == $c->slug) ? 'is-active' : '' }}" data-cat="{{ $c->slug }}">
-                            {{ $c->name }} <small>({{ $c->products_count ?? $c->products()->count() }})</small>
+                            {{ $c->name }} <small>({{ $c->products_count ?? 0 }})</small>
                         </button>
                     @endforeach
                 </div>
@@ -445,7 +445,7 @@
             <!-- Laravel Pagination Links (Bootstrap view, styled above) -->
             @if($products->hasPages())
                 <div class="pagination-wrap">
-                    {{ $products->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    {{ $products->appends(request()->query())->onEachSide(1)->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>
@@ -462,64 +462,95 @@
     var result  = document.getElementById('mkResult');
     var empty   = document.getElementById('mkEmpty');
     var chips   = document.querySelectorAll('.mk-chip');
-    var activeCat = '{{ $categorySlug ?: "all" }}';
 
-    function setCat(cat) {
-        activeCat = cat;
-        select.value = cat;
-        chips.forEach(function (c) { c.classList.toggle('is-active', c.dataset.cat === cat); });
-        apply();
+    // ─── Category changes: full server-side navigation (fixes pagination glitch) ───
+    function navigateToCat(cat) {
+        var url = new URL(window.location.href);
+        url.searchParams.delete('page'); // reset to page 1 on category change
+        if (cat === 'all' || !cat) {
+            url.searchParams.delete('category');
+        } else {
+            url.searchParams.set('category', cat);
+        }
+        // preserve search query
+        var q = search.value.trim();
+        if (q) {
+            url.searchParams.set('q', q);
+        } else {
+            url.searchParams.delete('q');
+        }
+        window.location.href = url.toString();
     }
 
-    function apply() {
+    // ─── On-page search/sort: client-side only (no pagination conflict) ───
+    function applyLocalFilter() {
         var q = search.value.trim().toLowerCase();
-        var shown = 0;
 
+        // If no search query, show all cards (server already filtered by category)
+        var shown = 0;
         cards.forEach(function (c) {
-            var ok = (activeCat === 'all' || c.dataset.cat === activeCat) &&
-                     (!q || c.dataset.name.indexOf(q) !== -1);
-            c.hidden = !ok;
+            var ok = !q || c.dataset.name.indexOf(q) !== -1;
+            c.style.display = ok ? '' : 'none';
             if (ok) shown++;
         });
 
+        // Sort visible cards
         var mode = sort.value;
-        cards.slice().sort(function (a, b) {
-            if (mode === 'price-asc')  return a.dataset.price - b.dataset.price;
-            if (mode === 'price-desc') return b.dataset.price - a.dataset.price;
-            if (mode === 'rating')     return b.dataset.rating - a.dataset.rating;
-            if (mode === 'name')       return a.dataset.name.localeCompare(b.dataset.name);
-            return a.dataset.order - b.dataset.order;
-        }).forEach(function (c) { grid.appendChild(c); });
+        if (mode !== 'default') {
+            cards.slice().sort(function (a, b) {
+                if (mode === 'price-asc')  return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                if (mode === 'price-desc') return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                if (mode === 'rating')     return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+                if (mode === 'name')       return a.dataset.name.localeCompare(b.dataset.name);
+                return parseInt(a.dataset.order) - parseInt(b.dataset.order);
+            }).forEach(function (c) { grid.appendChild(c); });
+        }
 
         result.innerHTML = shown
-            ? 'Showing <strong>' + shown + '</strong> of ' + cards.length + ' tested OEM parts'
+            ? 'Showing <strong>' + shown + '</strong> verified OEM parts in stock'
             : 'No matching parts found';
         if (empty) {
             empty.classList.toggle('is-visible', shown === 0 && cards.length > 0);
         }
     }
 
+    // ─── Wire up category chips & select to full-page navigation ───
     chips.forEach(function (c) {
-        c.addEventListener('click', function () {
-            setCat(c.dataset.cat);
-        });
+        c.addEventListener('click', function () { navigateToCat(c.dataset.cat); });
     });
+    select.addEventListener('change', function () { navigateToCat(select.value); });
 
-    select.addEventListener('change', function () { setCat(select.value); });
-    search.addEventListener('input', apply);
-    search.addEventListener('keydown', function (e) { if (e.key === 'Enter') apply(); });
-    document.getElementById('mkGo').addEventListener('click', apply);
-    sort.addEventListener('change', apply);
+    // ─── Wire up search & sort to local filter ───
+    search.addEventListener('input', applyLocalFilter);
+    search.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            // On Enter: do a full server search for accuracy across all pages
+            var url = new URL(window.location.href);
+            url.searchParams.delete('page');
+            var q = search.value.trim();
+            if (q) { url.searchParams.set('q', q); } else { url.searchParams.delete('q'); }
+            window.location.href = url.toString();
+        }
+    });
+    document.getElementById('mkGo').addEventListener('click', function () {
+        var url = new URL(window.location.href);
+        url.searchParams.delete('page');
+        var q = search.value.trim();
+        if (q) { url.searchParams.set('q', q); } else { url.searchParams.delete('q'); }
+        window.location.href = url.toString();
+    });
+    sort.addEventListener('change', applyLocalFilter);
 
+    // ─── Reset button ───
     var resetBtn = document.getElementById('mkReset');
     if (resetBtn) {
         resetBtn.addEventListener('click', function () {
-            search.value = '';
-            setCat('all');
+            window.location.href = '/shop';
         });
     }
 
-    apply();
+    // ─── Run local filter once on load (for sort restore, no category glitch) ───
+    applyLocalFilter();
 })();
 </script>
 @endsection

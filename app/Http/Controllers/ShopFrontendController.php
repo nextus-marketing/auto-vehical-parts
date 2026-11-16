@@ -21,7 +21,9 @@ class ShopFrontendController extends Controller
         $categorySlug = $request->query('category');
         $search = $request->query('q');
 
-        $categories = Category::where('status', 'ACTIVE')->orderBy('index', 'asc')->get();
+        $categories = Category::where('status', 'ACTIVE')->withCount(['products' => function ($q) {
+            $q->where('status', 'ACTIVE');
+        }])->orderBy('index', 'asc')->get();
 
         $query = Product::with('category')->where('status', 'ACTIVE');
 
