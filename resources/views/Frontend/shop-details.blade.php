@@ -279,7 +279,7 @@
                     </p>
 
                     <ul class="pd-specs">
-                        <li><i class="fas fa-check-circle"></i><div><strong>Mileage / Condition:</strong> {{ $product->mileage ?: 'Verified Low Miles Donor Vehicle' }}</div></li>
+                        <li><i class="fas fa-check-circle"></i><div><strong>Brand Name:</strong> {{ $product->mileage ?: 'Verified Low Miles Donor Vehicle' }}</div></li>
                         <li><i class="fas fa-check-circle"></i><div><strong>Warranty Terms:</strong> {{ $product->warranty ?: '1-Year Comprehensive Replacement Guarantee' }}</div></li>
                         <li><i class="fas fa-check-circle"></i><div><strong>Fitment Guarantee:</strong> {{ $product->fitment ?: '100% Guaranteed Exact Fit by VIN Verification' }}</div></li>
                         <li><i class="fas fa-check-circle"></i><div><strong>Nationwide Shipping:</strong> Free Freight with Liftgate Delivery (3-5 Business Days across USA)</div></li>
