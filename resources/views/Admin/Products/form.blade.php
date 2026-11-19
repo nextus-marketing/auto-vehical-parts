@@ -122,7 +122,7 @@
                     <h6 class="fw-bold text-secondary mb-3"><i class="ti ti-car me-1"></i> Auto Part Verification & Warranty Specs</h6>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Mileage / Donor Condition</label>
+                            <label class="form-label fw-semibold">Brand Name</label>
                             <input type="text" class="form-control" name="mileage" 
                                 placeholder="e.g. 54,200 Original Miles"
                                 value="{{ isset($product) ? $product->mileage : 'Verified Low Miles' }}" />
